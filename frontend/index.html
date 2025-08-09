@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Викторина — Проверка ответов</title>
+  <style>
+    /* Стили как раньше */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 400px;
+      margin: 40px auto;
+      padding: 20px 25px;
+      background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      color: #333;
+    }
+    h2, h3 {
+      text-align: center;
+      color: #2c3e50;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      margin-bottom: 20px;
+    }
+    #formWrapper {
+      background: white;
+      padding: 25px 30px 35px;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+      margin-bottom: 40px;
+    }
+    #adminPanel {
+      background: white;
+      padding: 25px 30px 35px;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+      margin-bottom: 40px;
+      display: none; /* Скрыто по умолчанию */
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: #34495e;
+      user-select: none;
+    }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 10px 14px;
+      margin-bottom: 18px;
+      font-size: 1rem;
+      border: 2px solid #d1d9e6;
+      border-radius: 8px;
+      box-sizing: border-box;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      font-weight: 500;
+      color: #2c3e50;
+    }
+    input[type="text"]:focus, input[type="password"]:focus {
+      border-color: #2f80ed;
+      box-shadow: 0 0 8px rgba(47, 128, 237, 0.5);
+      outline: none;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      background: #2f80ed;
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(47,128,237,0.4);
+      transition: background-color 0.3s ease;
+      user-select: none;
+      margin-top: 12px;
+    }
+    button:hover:not(:disabled) {
+      background-color: #2466c9;
+      box-shadow: 0 6px 18px rgba(36,102,201,0.6);
+    }
+    button:disabled {
+      background-color: #a3b1d7;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    #message, #points, #adminMessage {
+      min-height: 26px;
+      margin-bottom: 18px;
+      font-weight: 700;
+      font-size: 1rem;
+      color: #2c3e50;
+      text-align: center;
+      user-select: none;
+    }
+    #points {
+      font-size: 1.15rem;
+      color: #2980b9;
+      min-height: 28px;
+    }
+    .checkbox-group {
+      margin-bottom: 24px;
+      user-select: none;
+    }
+    .checkbox-group label {
+      display: inline-flex;
+      align-items: center;
+      margin-right: 18px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #34495e;
+      cursor: pointer;
+    }
+    .checkbox-group input[type="checkbox"] {
+      margin-right: 8px;
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+    .error {
+      border-color: #ff6b6b !important;
+      box-shadow: 0 0 8px #ff6b6b !important;
+    }
+    .fade-in {
+      animation: fadeIn 0.35s ease forwards;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0;}
+      to {opacity: 1;}
+    }
+    .hidden {
+      display: none !important;
+    }
+    #userGreeting {
+      margin-bottom: 20px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #2c3e50;
+      text-align: center;
+      min-height: 28px;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+  <h2>Викторина — Проверка ответов</h2>
+
+  <div id="userGreeting"></div>
+
+  <div id="formWrapper">
+    <label for="task_id">ID задания:</label>
+    <input type="text" id="task_id" placeholder="например, task1" />
+
+    <label for="answer">Ответ:</label>
+    <input type="text" id="answer" placeholder="Ваш ответ" />
+
+    <div id="usernameWrapper">
+      <label for="username">Имя или ник:</label>
+      <input type="text" id="username" placeholder="Введите имя" autocomplete="off" />
+    </div>
+
+    <div class="checkbox-group">
+      <label><input type="checkbox" id="rememberName" /> Запомнить имя</label>
+      <label><input type="checkbox" id="anonymous" /> Анонимно</label>
+    </div>
+
+    <button id="submitBtn">Проверить ответ</button>
+
+    <div id="message"></div>
+    <div id="points"></div>
+  </div>
+
+  <!-- Кнопка для открытия админ-панели -->
+  <button id="showAdminBtn" style="background:#34495e; margin-bottom: 40px;">Показать админ-панель</button>
+
+  <div id="adminPanel">
+    <h3>Админ-панель</h3>
+    <label for="adminKey">Введите секретный ключ (только латиница и цифры):</label>
+    <input type="password" id="adminKey" placeholder="Ключ администратора" autocomplete="off" />
+
+    <button id="downloadBtn" style="background: #e74c3c;">Скачать результаты</button>
+    <div id="adminMessage"></div>
+  </div>
+
+  <script>
+    // Элементы
+    const submitBtn = document.getElementById('submitBtn');
+    const messageDiv = document.getElementById('message');
+    const pointsDiv = document.getElementById('points');
+    const taskInput = document.getElementById('task_id');
+    const answerInput = document.getElementById('answer');
+    const usernameInput = document.getElementById('username');
+    const usernameWrapper = document.getElementById('usernameWrapper');
+    const userGreeting = document.getElementById('userGreeting');
+
+    const rememberNameCheckbox = document.getElementById('rememberName');
+    const anonymousCheckbox = document.getElementById('anonymous');
+
+    const LS_POINTS_KEY = 'quiz_current_points';
+    const LS_USERNAME_KEY = 'quiz_username';
+    const LS_REMEMBER_KEY = 'quiz_remember_name';
+
+    const downloadBtn = document.getElementById('downloadBtn');
+    const adminKeyInput = document.getElementById('adminKey');
+    const adminMessage = document.getElementById('adminMessage');
+    const adminPanel = document.getElementById('adminPanel');
+    const showAdminBtn = document.getElementById('showAdminBtn');
+
+    // Сохранение/загрузка данных
+    function savePoints(points) {
+      localStorage.setItem(LS_POINTS_KEY, points);
+    }
+    function loadPoints() {
+      return localStorage.getItem(LS_POINTS_KEY) || 0;
+    }
+    function saveUsername(name) {
+      localStorage.setItem(LS_USERNAME_KEY, name);
+    }
+    function loadUsername() {
+      return localStorage.getItem(LS_USERNAME_KEY) || '';
+    }
+    function saveRememberChoice(val) {
+      localStorage.setItem(LS_REMEMBER_KEY, val ? '1' : '0');
+    }
+    function loadRememberChoice() {
+      return localStorage.getItem(LS_REMEMBER_KEY) === '1';
+    }
+
+    // Анимация и ошибки
+    function animateText(element) {
+      element.classList.remove('fade-in');
+      void element.offsetWidth;
+      element.classList.add('fade-in');
+    }
+    function setError(input, isError) {
+      if (isError) input.classList.add('error');
+      else input.classList.remove('error');
+    }
+
+    // Показывать/скрывать поле имени
+    function updateUsernameVisibility() {
+      if (anonymousCheckbox.checked) {
+        usernameWrapper.classList.add('hidden');
+        rememberNameCheckbox.checked = false;
+        rememberNameCheckbox.disabled = true;
+      } else {
+        usernameWrapper.classList.remove('hidden');
+        rememberNameCheckbox.disabled = false;
+      }
+    }
+
+    // Приветствие пользователя
+    function updateUserGreeting() {
+      const remember = loadRememberChoice();
+      const username = remember ? loadUsername() : '';
+      const points = loadPoints();
+
+      if (username) {
+        userGreeting.textContent = `Привет, ${username}! Текущие баллы: ${points}`;
+      } else {
+        userGreeting.textContent = '';
+      }
+    }
+
+    // События
+    anonymousCheckbox.addEventListener('change', () => {
+      updateUsernameVisibility();
+    });
+
+    rememberNameCheckbox.addEventListener('change', () => {
+      saveRememberChoice(rememberNameCheckbox.checked);
+      if (!rememberNameCheckbox.checked) {
+        localStorage.removeItem(LS_USERNAME_KEY);
+      } else {
+        saveUsername(usernameInput.value.trim());
+      }
+      updateUserGreeting();
+    });
+
+    usernameInput.addEventListener('input', () => {
+      if (rememberNameCheckbox.checked) {
+        saveUsername(usernameInput.value.trim());
+        updateUserGreeting();
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const points = loadPoints();
+      if (points > 0) {
+        pointsDiv.textContent = 'Ваши баллы: ' + points;
+      }
+      const remember = loadRememberChoice();
+      rememberNameCheckbox.checked = remember;
+      if (remember) {
+        usernameInput.value = loadUsername();
+      }
+      updateUsernameVisibility();
+      updateUserGreeting();
+    });
+
+    // Проверка ответа
+    submitBtn.addEventListener('click', () => {
+      const task_id = taskInput.value.trim();
+      const answer = answerInput.value.trim();
+      let username = usernameInput.value.trim();
+
+      setError(taskInput, false);
+      setError(answerInput, false);
+      setError(usernameInput, false);
+      messageDiv.textContent = '';
+
+      if (!task_id) {
+        messageDiv.textContent = 'Введите ID задания.';
+        setError(taskInput, true);
+        animateText(messageDiv);
+        return;
+      }
+      if (!answer) {
+        messageDiv.textContent = 'Введите ответ.';
+        setError(answerInput, true);
+        animateText(messageDiv);
+        return;
+      }
+
+      if (anonymousCheckbox.checked) {
+        username = '';
+      } else {
+        if (!username) {
+          messageDiv.textContent = 'Введите имя или поставьте "Анонимно".';
+          setError(usernameInput, true);
+          animateText(messageDiv);
+          return;
+        }
+        setError(usernameInput, false);
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Проверка...';
+
+      fetch('/api/check-answer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ task_id, answer, username })
+      })
+      .then(res => res.json())
+      .then(data => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Проверить ответ';
+
+        if (data.correct) {
+          messageDiv.textContent = '✅ ' + data.message;
+          animateText(messageDiv);
+
+          if (data.current_points > 0) {
+            pointsDiv.textContent = 'Ваши баллы: ' + data.current_points;
+            animateText(pointsDiv);
+            savePoints(data.current_points);
+            updateUserGreeting();
+          } else {
+            pointsDiv.textContent = '';
+          }
+
+          taskInput.value = '';
+          answerInput.value = '';
+          taskInput.focus();
+        } else {
+          messageDiv.textContent = '❌ ' + data.message;
+          pointsDiv.textContent = '';
+          animateText(messageDiv);
+        }
+      })
+      .catch(() => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Проверить ответ';
+        messageDiv.textContent = 'Ошибка соединения с сервером';
+        pointsDiv.textContent = '';
+        animateText(messageDiv);
+      });
+    });
+
+    // Админская загрузка CSV
+    downloadBtn.addEventListener('click', () => {
+      const key = adminKeyInput.value.trim();
+
+      // Проверяем, что ключ состоит из латиницы и цифр
+      if (!key || !/^[a-zA-Z0-9]+$/.test(key)) {
+        adminMessage.textContent = 'Ключ обязателен и должен содержать только латинские буквы и цифры!';
+        return;
+      }
+      adminMessage.textContent = '';
+
+      fetch('/api/admin/export', {
+        method: 'GET',
+        headers: {
+          'x-api-key': key
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Неверный ключ или ошибка сервера');
+        }
+        return response.blob();
+      })
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'results.csv';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+        adminMessage.textContent = 'Файл успешно скачан.';
+      })
+      .catch(err => {
+        adminMessage.textContent = err.message;
+      });
+    });
+
+    // Кнопка показа/скрытия админ-панели
+    showAdminBtn.addEventListener('click', () => {
+      if (adminPanel.style.display === 'none' || adminPanel.style.display === '') {
+        adminPanel.style.display = 'block';
+        showAdminBtn.textContent = 'Скрыть админ-панель';
+      } else {
+        adminPanel.style.display = 'none';
+        showAdminBtn.textContent = 'Показать админ-панель';
+        adminMessage.textContent = '';
+        adminKeyInput.value = '';
+      }
+    });
+  </script>
+</body>
+</html>
