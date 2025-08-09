@@ -6,12 +6,15 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
 
+// Статика из корня проекта (один уровень выше папки api)
+app.use(express.static(path.join(__dirname, '..')));
+
+// Админский ключ (лучше хранить в env)
 const ADMIN_API_KEY = 'supersecret123';
 
-// Инициализация базы данных SQLite
-const db = new sqlite3.Database('./quiz.db', (err) => {
+// Инициализация базы данных SQLite с абсолютным путём
+const db = new sqlite3.Database(path.join(__dirname, '..', 'quiz.db'), (err) => {
   if (err) console.error('DB error:', err);
   else console.log('Connected to SQLite DB');
 });
